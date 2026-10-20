@@ -1,0 +1,11 @@
+node_modules
+.next
+data/pglite
+data/MUN.csv
+.env
+.env.local
+.env.*
+!.env.example
+*.log
+tsconfig.tsbuildinfo
+coverage

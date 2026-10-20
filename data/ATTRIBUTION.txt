@@ -1,0 +1,11 @@
+Répertoire des municipalités du Québec
+Ministère des Affaires municipales et de l'Habitation
+https://www.donneesquebec.ca/recherche/dataset/repertoire-des-municipalites-du-quebec
+Licence : Creative Commons Attribution 4.0 (CC-BY 4.0)
+
+Le fichier municipalities.json ne conserve que des champs publics : code géographique,
+nom, désignation, code postal du siège, région administrative et MRC.
+Les noms des élus et les coordonnées personnelles du répertoire source ne sont pas inclus.
+
+Import constitué pour Mijoté le 19 octobre 2026.
+Le code postal est celui du siège municipal, pas la liste de toutes les adresses d'une ville.

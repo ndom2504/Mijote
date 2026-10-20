@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "Mijoté",
+    "slug": "mijote",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#183C32",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ca.mijote.app"
+    },
+    "android": {
+      "package": "ca.mijote.app",
+      "usesCleartextTraffic": true,
+      "adaptiveIcon": {
+        "backgroundColor": "#183C32",
+        "foregroundImage": "./assets/icon.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-video",
+      "expo-secure-store"
+    ]
+  }
+}
