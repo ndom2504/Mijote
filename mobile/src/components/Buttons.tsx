@@ -25,12 +25,14 @@ export function PrimaryButton({ label, onPress, icon = "chevron-forward", disabl
   );
 }
 
-export function SecondaryButton({ label, onPress, style }: { label: string; onPress: () => void; style?: StyleProp<ViewStyle> }) {
+export function SecondaryButton({ label, onPress, style, disabled }: { label: string; onPress: () => void; style?: StyleProp<ViewStyle>; disabled?: boolean }) {
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled: !!disabled }}
+      disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [styles.secondary, pressed && styles.pressed, style]}
+      style={({ pressed }) => [styles.secondary, pressed && styles.pressed, disabled && styles.disabled, style]}
     >
       <Text style={styles.secondaryText}>{label}</Text>
     </Pressable>

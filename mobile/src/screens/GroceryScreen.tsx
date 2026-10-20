@@ -4,6 +4,9 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "r
 import { PrimaryButton } from "../components/Buttons";
 import { Screen } from "../components/Screen";
 import { DemoBanner, EmptyCard, ErrorCard, LoadingCard } from "../components/StateViews";
+import { StorePlaceSheet } from "../components/StorePlaceSheet";
+import { StoresCard } from "../components/StoresCard";
+import { useNearbyStores } from "../state/useNearbyStores";
 import { TextPromptSheet } from "../components/TextPromptSheet";
 import { progressLabel } from "../domain/lists";
 import { loadErrorMessage } from "../lib/errors";
@@ -17,6 +20,8 @@ export function GroceryScreen() {
   const personal = usePersonal();
   const { openList } = useNav();
   const [creating, setCreating] = useState(false);
+  const [placeOpen, setPlaceOpen] = useState(false);
+  const stores = useNearbyStores(personal.services.stores, personal.report);
 
   return (
     <Screen>
@@ -67,6 +72,16 @@ export function GroceryScreen() {
           );
         })}
 
+        <StoresCard
+          available={stores.available}
+          status={stores.status}
+          result={stores.result}
+          errorCode={stores.errorCode}
+          chosenPlace={stores.chosen !== null}
+          onChoosePlace={() => setPlaceOpen(true)}
+          onRetry={stores.reload}
+        />
+
         <View style={styles.note}>
           <Ionicons name="information-circle-outline" size={18} color={colors.muted} />
           <Text style={styles.noteText}>
@@ -74,6 +89,21 @@ export function GroceryScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      <StorePlaceSheet
+        visible={placeOpen}
+        search={stores.search}
+        hasChosenPlace={stores.chosen !== null}
+        onSelect={(place) => {
+          setPlaceOpen(false);
+          void stores.choose(place);
+        }}
+        onReset={() => {
+          setPlaceOpen(false);
+          void stores.reset();
+        }}
+        onClose={() => setPlaceOpen(false)}
+      />
 
       <TextPromptSheet
         visible={creating}

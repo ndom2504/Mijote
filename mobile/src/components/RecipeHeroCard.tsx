@@ -43,18 +43,14 @@ export function RecipeHeroCard({ recipe, slot, isFavorite, onToggleFavorite, onO
         <View style={styles.originRow}>
           <Text style={styles.origin}>{originText}</Text>
           <View style={styles.sep} />
-          <Ionicons name="restaurant-outline" size={16} color={colors.forest} />
           <Text style={styles.origin}>{SLOT_LABELS[slot]}</Text>
         </View>
 
         <View style={styles.meta}>
           <Meta icon="time-outline" top={`${recipe.prepMinutes} min`} bottom="préparation" />
-          <View style={styles.sep} />
           <Meta icon="flame-outline" top={`${recipe.cookMinutes} min`} bottom="cuisson" />
-          <View style={styles.sep} />
-          <Meta icon="people-outline" top={portionsLabel(recipe.servings)} />
-          <View style={styles.sep} />
-          <Meta icon="stats-chart-outline" top={difficultyLabel(recipe.difficulty)} />
+          <Meta icon="people-outline" top={String(recipe.servings)} bottom={recipe.servings > 1 ? "portions" : "portion"} />
+          <Meta icon="stats-chart-outline" top={difficultyLabel(recipe.difficulty)} bottom="difficulté" />
         </View>
 
         <Pressable
@@ -71,14 +67,19 @@ export function RecipeHeroCard({ recipe, slot, isFavorite, onToggleFavorite, onO
   );
 }
 
+/** Une colonne : texte centré, icône en dessous (zone plus aérée, lecture verticale). */
 function Meta({ icon, top, bottom }: { icon: keyof typeof Ionicons.glyphMap; top: string; bottom?: string }) {
   return (
     <View style={styles.metaItem}>
-      <Ionicons name={icon} size={20} color={colors.forest} />
-      <View>
-        <Text style={styles.metaTop}>{top}</Text>
-        {bottom ? <Text style={styles.metaBottom}>{bottom}</Text> : null}
+      <View style={styles.metaText}>
+        <Text style={styles.metaTop} numberOfLines={1}>
+          {top}
+        </Text>
+        <Text style={styles.metaBottom} numberOfLines={1}>
+          {bottom ?? " "}
+        </Text>
       </View>
+      <Ionicons name={icon} size={22} color={colors.forest} />
     </View>
   );
 }
@@ -98,15 +99,16 @@ const styles = StyleSheet.create({
     minHeight: 36,
   },
   badgeText: { color: colors.cream, fontSize: 13.5, fontWeight: "700", flexShrink: 1 },
-  body: { padding: 16, gap: 10 },
-  title: { color: colors.forest, fontFamily: fonts.serif, fontWeight: "700", fontSize: 24, lineHeight: 30 },
-  originRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  origin: { color: colors.ink, fontSize: 14.5 },
-  sep: { width: 1, alignSelf: "stretch", minHeight: 18, backgroundColor: colors.line },
-  meta: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", rowGap: 8, marginTop: 4 },
-  metaItem: { flexDirection: "row", alignItems: "center", gap: 6 },
-  metaTop: { color: colors.ink, fontSize: 13, fontWeight: "600" },
-  metaBottom: { color: colors.muted, fontSize: 11.5 },
+  body: { paddingHorizontal: 16, paddingTop: 18, paddingBottom: 16, gap: 12 },
+  title: { color: colors.forest, fontFamily: fonts.serif, fontWeight: "700", fontSize: 24, lineHeight: 30, textAlign: "center" },
+  originRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10 },
+  origin: { color: colors.ink, fontSize: 14.5, textAlign: "center" },
+  sep: { width: 1, height: 18, backgroundColor: colors.line },
+  meta: { flexDirection: "row", alignItems: "stretch", justifyContent: "space-between", marginTop: 6, paddingTop: 14, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
+  metaItem: { flex: 1, alignItems: "center", gap: 8 },
+  metaText: { alignItems: "center", gap: 1 },
+  metaTop: { color: colors.ink, fontSize: 13, fontWeight: "700", textAlign: "center" },
+  metaBottom: { color: colors.muted, fontSize: 11.5, textAlign: "center" },
   cta: {
     marginTop: 6,
     backgroundColor: colors.forest,

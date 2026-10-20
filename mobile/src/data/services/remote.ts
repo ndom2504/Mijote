@@ -1,7 +1,8 @@
 import { request } from "../client";
 import { mapRecipe, type RawRecipe } from "../recipeRepository";
 import { EMPTY_PROFILE, profilePayload } from "../../domain/preferences";
-import type { Place, Profile, ShoppingListDetail, ShoppingListSummary } from "../../domain/types";
+import { placeQuery } from "../../domain/stores";
+import type { NearbyStores, Place, Profile, ShoppingListDetail, ShoppingListSummary, StorePlace } from "../../domain/types";
 import type { PersonalServices } from "./types";
 
 interface RawProfile {
@@ -73,6 +74,28 @@ export function createRemoteServices(base: string, token: string): PersonalServi
       async searchPlaces(term) {
         const raw = await call<{ results: RawPlace[] }>(`/api/geo?q=${encodeURIComponent(term)}`);
         return raw.results.slice(0, 20).map<Place>((place) => ({ code: place.code, name: place.name, region: place.region }));
+      },
+    },
+    avatar: {
+      async get() {
+        const raw = await call<{ avatar: { uri: string } | null }>("/api/mobile/avatar");
+        return raw.avatar?.uri ?? null;
+      },
+      async set(base64) {
+        const raw = await call<{ avatar: { uri: string } }>("/api/mobile/avatar", { method: "PUT", body: { image: base64 } });
+        return raw.avatar.uri;
+      },
+      async remove() {
+        await call("/api/mobile/avatar", { method: "DELETE" });
+      },
+    },
+    stores: {
+      async nearby(place) {
+        return call<NearbyStores>(place ? `/api/mobile/epiceries?${placeQuery(place)}` : "/api/mobile/epiceries");
+      },
+      async searchPlaces(term) {
+        const raw = await call<{ places: StorePlace[] }>(`/api/mobile/epiceries/lieux?q=${encodeURIComponent(term.trim())}`);
+        return raw.places;
       },
     },
     saved: {

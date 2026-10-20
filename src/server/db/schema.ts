@@ -257,6 +257,21 @@ CREATE TABLE IF NOT EXISTS data_sources (
   notes TEXT
 );
 
+-- Photo de profil (image déjà réduite par l'application, en base64 ; une seule par compte).
+CREATE TABLE IF NOT EXISTS user_avatars (
+  user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  content_type TEXT NOT NULL,
+  data TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+-- Cache des recherches de lieux et d'épiceries (services ouverts, jamais de données personnelles).
+CREATE TABLE IF NOT EXISTS place_cache (
+  key TEXT PRIMARY KEY,
+  payload TEXT NOT NULL,
+  fetched_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS app_errors (
   id TEXT PRIMARY KEY,
   message TEXT NOT NULL,

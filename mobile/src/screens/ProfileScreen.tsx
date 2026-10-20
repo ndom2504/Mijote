@@ -1,11 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Avatar } from "../components/Avatar";
+import { AvatarSheet } from "../components/AvatarSheet";
 import { initialsOf } from "../components/BrandHeader";
 import { SecondaryButton } from "../components/Buttons";
 import { CountrySheet } from "../components/CountryPicker";
 import { NotificationsSheet } from "../components/NotificationsSheet";
 import { Screen } from "../components/Screen";
+import { CAMERA_DENIED_MESSAGE, PICK_FAILED_MESSAGE } from "../domain/avatar";
+import { pickAvatar, type AvatarSource } from "../lib/avatarPicker";
 import { flagEmoji } from "../lib/format";
 import { useNav } from "../navigation/NavContext";
 import { useAppData } from "../state/AppData";
@@ -49,6 +53,36 @@ export function ProfileScreen() {
   const { breakfastFrom, lunchFrom, dinnerFrom } = data.windows;
   const profile = personal.profile;
   const initials = initialsOf(profile?.firstName);
+  const [photoOpen, setPhotoOpen] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [photoNotice, setPhotoNotice] = useState<string | null>(null);
+
+  const choosePhoto = async (source: AvatarSource) => {
+    setPhotoError(null);
+    setPhotoBusy(true);
+    const picked = await pickAvatar(source);
+    if (picked.status === "denied") setPhotoError(CAMERA_DENIED_MESSAGE);
+    else if (picked.status === "error") setPhotoError(PICK_FAILED_MESSAGE);
+    else if (picked.status === "ok") {
+      const saved = await personal.setAvatar(picked.base64);
+      if (saved.ok) {
+        setPhotoOpen(false);
+        setPhotoNotice("Photo de profil mise à jour.");
+      } else setPhotoError(saved.message);
+    }
+    setPhotoBusy(false);
+  };
+
+  const removePhoto = async () => {
+    setPhotoBusy(true);
+    const removed = await personal.removeAvatar();
+    setPhotoBusy(false);
+    if (removed.ok) {
+      setPhotoOpen(false);
+      setPhotoNotice("Photo de profil retirée.");
+    } else setPhotoError(removed.message);
+  };
 
   return (
     <Screen>
@@ -58,12 +92,41 @@ export function ProfileScreen() {
         </Text>
 
         <View style={styles.identity}>
-          <View style={styles.avatar}>{initials ? <Text style={styles.initials}>{initials}</Text> : <Ionicons name="person" size={30} color={colors.forest} />}</View>
-          <View style={{ flex: 1 }}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={personal.avatarUri ? "Changer ma photo de profil" : "Ajouter une photo de profil"}
+            onPress={() => {
+              setPhotoError(null);
+              setPhotoOpen(true);
+            }}
+            style={({ pressed }) => [styles.avatarWrap, pressed && { opacity: 0.85 }]}
+          >
+            <Avatar uri={personal.avatarUri} initials={initials} size={84} />
+            <View style={styles.camera}>
+              <Ionicons name="camera" size={15} color={colors.cream} />
+            </View>
+          </Pressable>
+          <View style={{ flex: 1, gap: 2 }}>
             <Text style={styles.name}>{profile?.firstName || "Bienvenue"}</Text>
             <Text style={styles.hint}>{data.source === "demo" ? "Mode démonstration" : "Compte Mijoté connecté"}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={personal.avatarUri ? "Changer la photo" : "Ajouter une photo"}
+              onPress={() => {
+                setPhotoError(null);
+                setPhotoOpen(true);
+              }}
+              hitSlop={8}
+            >
+              <Text style={styles.link}>{personal.avatarUri ? "Changer la photo" : "Ajouter une photo"}</Text>
+            </Pressable>
           </View>
         </View>
+        {photoNotice ? (
+          <Text style={styles.notice} accessibilityRole="alert">
+            {photoNotice}
+          </Text>
+        ) : null}
 
         <Row icon="options-outline" label="Mes préférences alimentaires" hint="Allergies, régime, ingrédients à éviter, portions et temps" onPress={openPreferences} />
         <Row icon="bookmark-outline" label="Recettes sauvegardées" value={personal.stats.saved === null ? undefined : String(personal.stats.saved)} onPress={openSaved} />
@@ -91,6 +154,15 @@ export function ProfileScreen() {
 
       <CountrySheet visible={countryOpen} selected={data.country?.code ?? null} onSelect={(code) => void data.changeCountry(code)} onClose={() => setCountryOpen(false)} />
       <NotificationsSheet visible={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
+      <AvatarSheet
+        visible={photoOpen}
+        hasPhoto={personal.avatarUri !== null}
+        busy={photoBusy}
+        error={photoError}
+        onPick={(source) => void choosePhoto(source)}
+        onRemove={() => void removePhoto()}
+        onClose={() => setPhotoOpen(false)}
+      />
     </Screen>
   );
 }
@@ -98,9 +170,23 @@ export function ProfileScreen() {
 const styles = StyleSheet.create({
   content: { padding: 20, gap: 14, paddingBottom: 32 },
   title: { color: colors.forest, fontFamily: fonts.serif, fontWeight: "700", fontSize: 32 },
-  identity: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 4 },
-  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.pale, alignItems: "center", justifyContent: "center" },
-  initials: { color: colors.forest, fontFamily: fonts.serif, fontWeight: "700", fontSize: 24 },
+  identity: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 4 },
+  avatarWrap: { width: 84, height: 84 },
+  camera: {
+    position: "absolute",
+    right: -2,
+    bottom: -2,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: colors.forest,
+    borderWidth: 2,
+    borderColor: colors.cream,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  link: { color: colors.forest, fontSize: 15, fontWeight: "700", textDecorationLine: "underline" },
+  notice: { color: colors.forest, backgroundColor: colors.pale, borderRadius: 14, padding: 12, fontSize: 14, fontWeight: "600" },
   name: { color: colors.forest, fontFamily: fonts.serif, fontWeight: "700", fontSize: 24 },
   card: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: colors.white, borderRadius: radius.tile, padding: 16, ...softShadow },
   cardText: { flex: 1, gap: 2 },

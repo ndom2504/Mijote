@@ -1,15 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, fonts, radius, softShadow } from "../theme";
+import { colors, fonts, softShadow } from "../theme";
+import { Avatar } from "./Avatar";
 
 interface Props {
   /** Initiales du prénom ; icône de personne si le prénom est inconnu. */
   initials: string;
+  /** Photo de profil, si la personne en a téléversé une. */
+  photoUri?: string | null;
   onPressProfile: () => void;
 }
 
 /** Logo, signature et avatar (avec roue d'engrenage) qui mène au profil et aux paramètres. */
-export function BrandHeader({ initials, onPressProfile }: Props) {
+export function BrandHeader({ initials, photoUri = null, onPressProfile }: Props) {
   return (
     <View>
       <View style={styles.logoRow}>
@@ -21,9 +24,7 @@ export function BrandHeader({ initials, onPressProfile }: Props) {
           style={({ pressed }) => [styles.avatarWrap, pressed && styles.pressed]}
           hitSlop={6}
         >
-          <View style={styles.avatar}>
-            {initials ? <Text style={styles.initials}>{initials}</Text> : <Ionicons name="person" size={26} color={colors.forest} />}
-          </View>
+          <Avatar uri={photoUri} initials={initials} size={54} style={styles.avatar} />
           <View style={styles.gear}>
             <Ionicons name="settings" size={13} color={colors.cream} />
           </View>
@@ -48,18 +49,7 @@ const styles = StyleSheet.create({
   logoRow: { alignItems: "center", justifyContent: "center", minHeight: 80, marginTop: 8 },
   logo: { width: 76, height: 76, borderRadius: 20 },
   avatarWrap: { position: "absolute", right: 0, top: 6, width: 58, height: 58 },
-  avatar: {
-    width: 54,
-    height: 54,
-    borderRadius: radius.pill,
-    backgroundColor: colors.pale,
-    borderWidth: 2,
-    borderColor: colors.white,
-    alignItems: "center",
-    justifyContent: "center",
-    ...softShadow,
-  },
-  initials: { color: colors.forest, fontFamily: fonts.serif, fontWeight: "700", fontSize: 20 },
+  avatar: { borderWidth: 2, borderColor: colors.white, ...softShadow },
   gear: {
     position: "absolute",
     right: -2,

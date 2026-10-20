@@ -1,4 +1,4 @@
-import type { Catalog, Place, Profile, Recipe, ShoppingListDetail, ShoppingListSummary } from "../../domain/types";
+import type { Catalog, NearbyStores, Place, Profile, Recipe, ShoppingListDetail, ShoppingListSummary, StorePlace } from "../../domain/types";
 
 /**
  * Couche de services du tableau de bord. Les écrans ne connaissent que ces interfaces :
@@ -44,9 +44,27 @@ export interface CatalogService {
   load(): Promise<Catalog>;
 }
 
+export interface AvatarService {
+  /** Adresse `data:` de la photo de profil, ou `null` si aucune n'est définie. */
+  get(): Promise<string | null>;
+  /** Envoie une photo (JPEG en base64, déjà réduit) et renvoie son adresse `data:`. */
+  set(base64: string): Promise<string>;
+  remove(): Promise<void>;
+}
+
+export interface StoresService {
+  /** Épiceries près du lieu choisi, ou près du lieu du profil si aucun n'est donné. */
+  nearby(place?: StorePlace | null): Promise<NearbyStores>;
+  /** Recherche d'une ville, d'un quartier ou d'un code postal canadien. */
+  searchPlaces(term: string): Promise<StorePlace[]>;
+}
+
 export interface PersonalServices {
   readonly source: "api" | "demo";
   profile: ProfileService;
+  avatar: AvatarService;
+  /** Absent en démonstration : la recherche d'épiceries passe par le serveur. */
+  stores?: StoresService;
   saved: SavedService;
   lists: ListsService;
   catalog: CatalogService;

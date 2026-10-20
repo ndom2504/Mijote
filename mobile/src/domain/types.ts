@@ -110,3 +110,50 @@ export interface Catalog {
   /** Recettes masquées à cause des allergies, du régime ou des exclusions. */
   hiddenCount: number;
 }
+
+/** Lieu canadien (ville, quartier ou zone de code postal) choisi pour chercher des épiceries. */
+export interface StorePlace {
+  label: string;
+  city: string;
+  province: string | null;
+  provinceName: string | null;
+  lat: number;
+  lon: number;
+}
+
+export type StoreKind = "supermarket" | "grocery" | "greengrocer" | "wholesale";
+
+export interface GroceryStore {
+  id: string;
+  name: string;
+  kind: StoreKind;
+  brand: string | null;
+  address: string | null;
+  city: string | null;
+  distanceKm: number;
+  website: string | null;
+}
+
+export interface StoreChain {
+  name: string;
+  kind: "supermarket" | "discount" | "warehouse" | "specialty";
+  website: string | null;
+}
+
+/** `live` : tout juste récupéré ; `cache` : récupéré récemment ; `stale` : ancien (réseau indisponible). */
+export type StoresFreshness = "live" | "cache" | "stale" | "unavailable";
+
+export interface NearbyStores {
+  /** Faux hors Canada : la recherche d'épiceries ne couvre que le Canada. */
+  supported: boolean;
+  /** Aucun lieu connu : la personne doit en choisir un. */
+  needsPlace: boolean;
+  /** Le lieu du profil n'a pas pu être résolu (service en ligne indisponible). */
+  placeUnavailable: boolean;
+  place: StorePlace | null;
+  stores: GroceryStore[];
+  chains: StoreChain[];
+  freshness: StoresFreshness | null;
+  radiusKm: number | null;
+  attribution: string;
+}

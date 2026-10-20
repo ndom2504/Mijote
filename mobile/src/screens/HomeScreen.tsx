@@ -45,7 +45,7 @@ export function HomeScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.forest} colors={[colors.forest]} />}
       >
-        <BrandHeader initials={initialsOf(profile?.firstName)} onPressProfile={() => goTab("profile")} />
+        <BrandHeader initials={initialsOf(profile?.firstName)} photoUri={personal.avatarUri} onPressProfile={() => goTab("profile")} />
 
         {data.source === "demo" ? <DemoBanner /> : null}
 

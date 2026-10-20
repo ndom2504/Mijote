@@ -5,7 +5,7 @@ import type { PersonalServices } from "../data/services/types";
 import { dashboardStats, type DashboardStats } from "../domain/preferences";
 import type { Catalog, Profile, Recipe, ShoppingListSummary } from "../domain/types";
 import { listErrorMessage } from "../domain/lists";
-import { saveErrorMessage } from "../lib/errors";
+import { avatarErrorMessage, saveErrorMessage } from "../lib/errors";
 import { useAppData } from "./AppData";
 
 export type LoadStatus = "loading" | "ready" | "error";
@@ -25,6 +25,11 @@ interface PersonalValue {
   reloadProfile: () => void;
   /** Enregistre les préférences, puis actualise la recette du jour et le catalogue. */
   saveProfile: (next: Profile) => Promise<{ ok: true; profile: Profile } | { ok: false; message: string }>;
+
+  /** Photo de profil (adresse `data:`) ; `null` tant qu'elle charge ou si aucune n'est définie (initiales affichées). */
+  avatarUri: string | null;
+  setAvatar: (base64: string) => Promise<{ ok: true } | { ok: false; message: string }>;
+  removeAvatar: () => Promise<{ ok: true } | { ok: false; message: string }>;
 
   saved: Recipe[];
   savedStatus: LoadStatus;
@@ -73,6 +78,7 @@ export function PersonalProvider({ services, onSessionExpired, children }: Provi
   const [lists, setLists] = useState<Part<ShoppingListSummary>>({ status: "loading", errorCode: null, items: [] });
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [catalogStatus, setCatalogStatus] = useState<CatalogStatus>("idle");
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const catalogWanted = useRef(false);
 
   const report = useCallback(
@@ -134,6 +140,44 @@ export function PersonalProvider({ services, onSessionExpired, children }: Provi
     void reloadSaved();
     void reloadLists();
   }, [reloadProfile, reloadSaved, reloadLists]);
+
+  useEffect(() => {
+    let active = true;
+    services.avatar
+      .get()
+      .then((uri) => {
+        if (active) setAvatarUri(uri);
+      })
+      .catch((caught) => {
+        // Sans photo, les initiales s'affichent : ce n'est pas une erreur bloquante, sauf session expirée.
+        if (active) report(caught);
+      });
+    return () => {
+      active = false;
+    };
+  }, [services, report]);
+
+  const setAvatar = useCallback<PersonalValue["setAvatar"]>(
+    async (base64) => {
+      try {
+        setAvatarUri(await services.avatar.set(base64));
+        return { ok: true };
+      } catch (caught) {
+        return { ok: false, message: avatarErrorMessage(report(caught)) };
+      }
+    },
+    [services, report],
+  );
+
+  const removeAvatar = useCallback<PersonalValue["removeAvatar"]>(async () => {
+    try {
+      await services.avatar.remove();
+      setAvatarUri(null);
+      return { ok: true };
+    } catch (caught) {
+      return { ok: false, message: avatarErrorMessage(report(caught)) };
+    }
+  }, [services, report]);
 
   const saveProfile = useCallback<PersonalValue["saveProfile"]>(
     async (next) => {
@@ -221,6 +265,9 @@ export function PersonalProvider({ services, onSessionExpired, children }: Provi
       profileError,
       reloadProfile: () => void reloadProfile(),
       saveProfile,
+      avatarUri,
+      setAvatar,
+      removeAvatar,
       saved: saved.items,
       savedStatus: saved.status,
       reloadSaved: () => void reloadSaved(),
@@ -249,6 +296,9 @@ export function PersonalProvider({ services, onSessionExpired, children }: Provi
       profileError,
       reloadProfile,
       saveProfile,
+      avatarUri,
+      setAvatar,
+      removeAvatar,
       saved,
       reloadSaved,
       toggleSaved,

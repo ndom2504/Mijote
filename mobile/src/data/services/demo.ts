@@ -31,6 +31,20 @@ export function createDemoServices(store: DemoStore): PersonalServices {
         store.profile = { ...profile, countryCode: store.profile.countryCode };
       },
     },
+    avatar: {
+      async get() {
+        return store.avatar;
+      },
+      async set(base64) {
+        await delay();
+        store.avatar = `data:image/jpeg;base64,${base64}`;
+        return store.avatar;
+      },
+      async remove() {
+        await delay();
+        store.avatar = null;
+      },
+    },
     saved: {
       async list() {
         await delay();

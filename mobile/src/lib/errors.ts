@@ -10,3 +10,11 @@ export function saveErrorMessage(code: string | null): string {
   if (code === "invalid" || code === "invalid_postal") return "Certaines valeurs ne sont pas valides. Vérifie les champs, puis réessaie.";
   return "L'enregistrement n'a pas fonctionné. Réessaie dans un instant.";
 }
+
+export function avatarErrorMessage(code: string | null): string {
+  if (code === "unreachable") return "Pas de connexion au serveur : ta photo n'a pas été modifiée. Réessaie.";
+  if (code === "too_large") return "Cette photo est trop lourde. Choisis-en une autre.";
+  if (code === "invalid_image") return "Ce fichier n'est pas une photo valide (JPEG, PNG ou WebP).";
+  if (code === "rate") return "Trop d'essais d'un coup. Patiente une minute, puis réessaie.";
+  return "La photo n'a pas pu être enregistrée. Réessaie dans un instant.";
+}

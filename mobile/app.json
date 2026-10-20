@@ -24,7 +24,15 @@
     },
     "plugins": [
       "expo-video",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Mijoté a besoin de ta galerie pour que tu choisisses ta photo de profil.",
+          "cameraPermission": "Mijoté a besoin de l'appareil photo pour prendre ta photo de profil.",
+          "microphonePermission": false
+        }
+      ]
     ]
   }
 }

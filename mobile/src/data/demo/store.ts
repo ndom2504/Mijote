@@ -18,11 +18,13 @@ export interface DemoStore {
   favorites: Recipe[];
   saved: Recipe[];
   lists: DemoList[];
+  /** Photo de profil choisie en démonstration (adresse `data:`), gardée en mémoire seulement. */
+  avatar: string | null;
   counter: number;
 }
 
 export function createDemoStore(): DemoStore {
-  return { profile: { ...EMPTY_PROFILE, firstName: "", countryCode: "CA" }, favorites: [], saved: [], lists: [], counter: 0 };
+  return { profile: { ...EMPTY_PROFILE, firstName: "", countryCode: "CA" }, favorites: [], saved: [], lists: [], avatar: null, counter: 0 };
 }
 
 export function nextDemoId(store: DemoStore, prefix: string): string {
